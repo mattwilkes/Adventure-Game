@@ -9,6 +9,7 @@
 <input id="input" type="text" placeholder="Enter your action...">
 <button>enter</button>
      <div><input type="button" id="button" value="Save"></div>
+     <div><input type="button" id="reset" value="Reset Save"></div>
 
 <script>
 /*create the map*/
@@ -379,8 +380,9 @@ function init(){
 function saveInfo(){
 	localStorage.setItem("mapLocation", mapLocation);
 }
-
-
+function clear(){
+localstorage.clear();
+}
 
 </script>
 <body>
