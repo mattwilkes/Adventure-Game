@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<title>Adventure Game</title>
+<head>
+</head>
+<p id="output"></p>
+<img src="" width="300" height="267">
+<p id="output"></p>
+<input id="input" type="text" placeholder="Enter your action...">
+<button>enter</button>
+     <div><input type="button" id="button" value="Save"></div>
+
+<script>
+/*create the map*/
+window.addEventListener("load",init);
+var map = [];
+map[0] = "A Red Room.";
+map[1] = "A room with a white locked door.";
+map[2] = "A room with nothing in it.";
+map[3] = "A room with a green locked chest.";
+map[4] = "You are in an empty room. <br> Some writing on the wall tells you to use cardinal directions to navigate the rooms and the words 'use, take and drop' are written right next to it.";
+map[5] = "A room filled with useless items.";
+map[6] = "A pure white room with a picture of a key on the wall.";
+map[7] = "A room with a blue locked chest.";
+map[8] = "A room with a red locked chest.";
+
+/*array of images for the map*/
+var images = [];
+images[0] = "redroom.png";
+images[1] = "whitedoor.png";
+images[2] = "whiteroom.png";
+images[3] = "green box.png";
+images[4] = "whiteroom.png";
+images[5] = "useless.png";
+images[6] = "keyroom.png";
+images[7] = "bluebox.png";
+images[8] = "red box.png";
+
+/*checks for local storage and puts the player there if it finds anything*/
+if (localStorage.getItem("mapLocation") !== null)
+	{
+	var mapLocation = localStorage.getItem("mapLocation");
+	}
+	else
+	{
+	var mapLocation = 4;
+	}
+var output = document.querySelector("#output");
+output.innerHTML = map[mapLocation];
+
+/*input arrays*/
+var playersInput = "";
+var gameMessage = "";
+var actionsKnow = ["north", "east", "south", "west", "take", "use", "drop"];
+var action = "";
+
+/*item arrays*/
+var item = "";
+var items = ["red key", "useless item"];
+var itemLocations = [0, 5];
+var backpack = [];
+
+/*image variable*/
+var image = document.querySelector("img");
+
+/*input and output fields*/
+var output = document.querySelector("#output");
+var input = document.querySelector("#input");
+
+/*Make the button work*/
+var button = document.querySelector("button")
+button.style.cursor = "pointer";
+button.addEventListener("click", clickHandler, false);
+
+render();
+
+function clickHandler()
+{
+playGame();
+}
+
+function playGame()
+{
+	/* convert to lowercase*/
+	playersInput = input.value;
+	playersInput = playersInput.toLowerCase();
+
+	gameMessage = "";
+	action = "";
+	
+	/*deciphers the player's actions*/
+	for (i = 0; i < actionsKnow.length; i++)
+	{
+		if(playersInput.indexOf(actionsKnow[i]) !== -1)
+		{
+		action = actionsKnow[i];
+		console.log("player's action:" + action);
+		break;
+		}
+	}
+
+	for(i = 0; i < items.length; i++)
+	{
+		if(playersInput.indexOf(items[i]) !== -1)
+		{
+		item = items[i];
+		console.log("player's item: " + item);
+		}
+	}
+	
+	/* choose what to do with the player action*/
+	switch(action)
+	{
+		case "north":
+		if(mapLocation >= 3)
+		{
+			mapLocation -= 3;
+		}
+		else
+    {
+      gameMessage = blockedPathMessages[mapLocation];
+    }
+		break;
+		
+		case "south":
+		if(mapLocation <6)
+		{
+			mapLocation += 3;
+		}
+		else
+    {
+      gameMessage = blockedPathMessages[mapLocation];
+    }
+		break;
+			
+		case "east":
+		if(mapLocation % 3 != 2)
+		{
+			mapLocation += 1;
+		}
+		else
+    {
+      gameMessage = blockedPathMessages[mapLocation];
+    }
+		break;
+		
+		case "west":
+		if(mapLocation % 3 != 0)
+		{
+			mapLocation -= 1;
+		}
+		else
+    {
+      gameMessage = blockedPathMessages[mapLocation];
+    }
+		break;
+		
+		case "take":
+		takeItem()
+		break;
+		
+		case "drop":
+		dropItem();
+		break;
+		
+		case "use":
+		useItem();
+		break;
+		
+		default:
+			gameMessage = "I don't understand that."
+	}
+	
+
+	render();
+}
+
+/*blocked path messages*/
+var blockedPathMessages = [];
+blockedPathMessages[0] = "There's a wall in your way";
+blockedPathMessages[1] = "There's a wall in your way";
+blockedPathMessages[2] = "There's a wall in your way";
+blockedPathMessages[3] = "There's a wall in your way";
+blockedPathMessages[4] = "";
+blockedPathMessages[5] = "There's a wall in your way";
+blockedPathMessages[6] = "There's a wall in your way";
+blockedPathMessages[7] = "There's a wall in your way";
+blockedPathMessages[8] = "There's a wall in your way";
+
+
+function takeItem()
+{
+
+  /*gets the item index and checks if the player is in the same spot to take the item*/
+  var itemIndexNumber = items.indexOf(item);
+  if(itemIndexNumber !== -1
+  && mapLocation === itemLocations[itemIndexNumber])
+  {
+    gameMessage = "You take the " + item + ".";
+    
+	/*puts item into the backpack*/
+    backpack.push(item);
+    items.splice(itemIndexNumber, 1);
+    itemLocations.splice(itemIndexNumber, 1);
+    
+    console.log("World items: " + items);
+    console.log("backpack items: " + backpack);
+  }
+  else
+  {
+    gameMessage = "You can't do that.";
+  }
+}
+function dropItem()
+{
+	/* checks if theres even an item to drop*/
+   if(backpack.length !== 0)
+   {
+	/*goes through the backpack and drops the selected item*/
+     var backpackIndexNumber = backpack.indexOf(item);
+     if(backpackIndexNumber !== -1)
+     {
+     gameMessage = "You drop the " + item + ".";
+     items.push(backpack[backpackIndexNumber]);
+     itemLocations.push(mapLocation);
+
+       backpack.splice(backpackIndexNumber, 1);
+       }
+       else
+       {
+      
+       gameMessage = "You can't do that.";
+       }
+   }
+   else
+   {
+
+     gameMessage = "You're not carrying anything.";
+   }
+}
+
+function render()
+{
+  /*put the picture on the room*/
+  output.innerHTML = map[mapLocation];
+  image.src = "../Adventure/images/" + images[mapLocation];
+
+  /*check for item in the room and write it if there is one*/
+  for(var i = 0; i < items.length; i++)
+  {
+
+   //Find out if there's an item at this location
+   if(mapLocation === itemLocations[i])
+   {
+	 /*write out the item*/
+     output.innerHTML 
+      += "<br>You see a <strong>" 
+      + items[i]
+      + "</strong> here.";
+   }
+  }
+
+  /*displays the players backpack*/
+  if(backpack.length !== 0)
+  {
+    output.innerHTML += "<br>You are carrying: " + backpack.join(", ");  
+  }
+ 
+  output.innerHTML += "<br><em>" + gameMessage + "</em>";
+  input.value = "";
+}
+
+function useItem()
+{
+	/*look for an item in the backpack*/
+   var backpackIndexNumber = backpack.indexOf(item);
+
+	/*writes if theres no item in the backpack*/
+   if(backpackIndexNumber === -1)
+   {
+     gameMessage = "You don't have a item to use";
+   }
+   
+   if(backpack.length === 0)
+   {
+     gameMessage += " Your backpack is empty";
+   }
+   /*the cases for using the items in certain rooms*/
+   if(backpackIndexNumber !== -1)
+   {
+     switch(item)
+     {
+       case "useless item":
+         gameMessage = "You twiddle your thumbs.";
+         break;
+
+       case "red key":
+         if(mapLocation === 8)
+         {
+           gameMessage
+             = "You unlock the chest and a blue key is inside";
+			 items.push("blue key");
+			 itemLocations.push(mapLocation);
+         }
+         else
+
+         {
+            gameMessage
+              = "There is nothing that key fits into in this room.";
+          }
+          break;
+
+        case "blue key":
+         if(mapLocation === 7)
+         {
+           gameMessage
+             = "You unlock the chest and a green key is inside";
+			 items.push("green key");
+			 itemLocations.push(mapLocation);
+         }
+         else
+
+         {
+            gameMessage
+              = "There is nothing that key fits into in this room.";
+          }
+		  break;
+		 case "green key":
+         if(mapLocation === 3)
+         {
+           gameMessage
+             = "You unlock the chest and a white key is inside";
+			 items.push("white key");
+			 itemLocations.push(mapLocation);
+         }
+         else
+
+         {
+            gameMessage
+              = "There is nothing that key fits into in this room.";
+          }
+		  break;
+		 case "white key":
+         if(mapLocation === 1)
+         {
+           gameMessage
+             = "You unlock the door and escape out of the building";
+         }
+         else
+
+         {
+            gameMessage
+              = "There is nothing that key fits into in this room.";
+          }
+		  break;
+        }
+    }
+}
+
+/*localstorage functions*/
+function init(){
+	if(typeof(Storage)!=="undefined"){
+	
+	
+	var button=document.getElementById("button");
+	button.addEventListener("click",saveInfo);
+	
+	var button=document.getElementById("reset");
+	button.addEventListener("click",clear);
+
+
+	}
+	
+	else{
+
+	}
+}
+
+function saveInfo(){
+	localStorage.setItem("mapLocation", mapLocation);
+}
+
+
+
+</script>
+<body>
+
+
+</body>
+</html>
+
+
